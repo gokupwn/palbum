@@ -38,9 +38,13 @@ if [ ! -d $OUTDIR ];then
     mkdir $OUTDIR
 fi
 
+function generateHtml(){
+	html="<!DOCTYPE html>\n<html>\n<head>\n<title>album</title>\n<meta charset=\"utf-8\"/>\n</head>\n<body>$@</body>\n</html>"
+}
 
 for image in $(ls $INPUTDIR);do
 
+	# --- Extract image year --- #
         idate=$(exif $INPUTDIR/$image | grep "Date and Time  " | cut -d "|" -f2)
         idate=${idate:0:10}
         iyear=${idate:0:4}
@@ -51,19 +55,23 @@ for image in $(ls $INPUTDIR);do
         # --- And save it into a variable directory date--- #
         dirdate=$(echo $idate | tr ":" "_")
 
+	# --- Check if year already created ---#
         if [ ! -d $OUTDIR/$iyear ];then
             mkdir $OUTDIR/$iyear
         fi
 
         destdir=$OUTDIR/$iyear/$dirdate
 
+	# --- Check if a date dir already created --- #
         if [ ! -d $destdir ];then
             mkdir $destdir
             mkdir $destdir/.thumbs
         fi
 
+	# --- Move image to appropriate directory --- #
         mv $INPUTDIR/$image $destdir/${dirdate}-$image
-        
+
+        # --- Create Thumbnail --- #	
         convert -thumbnail x150 $destdir/${dirdate}-$image $destdir/.thumbs/${dirdate}-${image%.*}-thumb.jpg
 done
 
@@ -72,14 +80,13 @@ yeartag=""
 
 for year in $(ls $OUTDIR);do
     if [ $year != "index.html" ];then
-        yeartag=$yeartag"\n<h1 style=\"display: inline; padding: 20px; text-align: center; background-color: rgb(200, 200, 200);\"><a style = \"text-decoration: none; color: #fff;\" href=\"$year/index.html\" >$year</a></h1>\n"
+	    imagecounter=$(find $OUTDIR/$year -type f -name '*-thumb.*' | wc -l )
+	    yeartag=$yeartag"\n<h1 style=\"display: inline; padding: 20px; text-align: center; background-color: rgb(200, 200, 200);\"><a style = \"text-decoration: none; color: #fff;\" href=\"$year/index.html\" >$year : $imagecounter images</a></h1>\n"
     fi
 done
 
-html="<!DOCTYPE html>\n<html>\n<head>\n<title>album</title>\n<meta charset=\"utf-8\"/>\n</head>\n<body>$yeartag</body>\n</html>"
-
+generateHtml $yeartag
 echo -e $html > $OUTDIR/index.html
-
 
 
 for year in $(ls $OUTDIR);do
@@ -92,7 +99,7 @@ for year in $(ls $OUTDIR);do
          if [ $date != "index.html" ]
          then
          datetag=$datetag"<h1 style=\"background-color: rgb(200, 200, 200); color: #fff; max-width: 200px; padding: 10px;\">$date</h1>"
-         thumbnailtag=""
+	 thumbnailtag=""
          for thumbnail in $(ls $OUTDIR/$year/$date/.thumbs)
          do
             thumbnailtag=$thumbnailtag"<a href=\"$date/${thumbnail%-*}.jpg\"><img style=\"padding: 10px\" src=\"$date/.thumbs/$thumbnail\" /></a>"
@@ -101,7 +108,8 @@ for year in $(ls $OUTDIR);do
          fi
     done
     
-    html="<!DOCTYPE html>\n<html>\n<head>\n<title>album</title>\n<meta charset=\"utf-8\"/>\n</head>\n<body>$datetag</body>\n</html>"
+    # html="<!DOCTYPE html>\n<html>\n<head>\n<title>album</title>\n<meta charset=\"utf-8\"/>\n</head>\n<body>$datetag</body>\n</html>"
+    generateHtml $datetag
     echo -e $html > $OUTDIR/$year/index.html
     
     fi
