@@ -95,3 +95,4 @@ newalbum/
 # Photos from index.html
 ![alt index.html](album-1.jpg)
 ![alt index.html](album-2.jpg)
+each photo is a thumbnail once you clik on it it will display the original photo
