@@ -1,6 +1,13 @@
 # palbum
 A bash script used to create an album of photos hierarchy with an html file to browse your gallary
-# hierarchy
+# Install
+```bash
+sudo apt install exif
+sudo apt install imagemagick-6.q16       
+sudo apt install imagemagick-6.q16hdri              
+sudo apt install graphicsmagick-imagemagick-compat  
+```
+# Hierarchy
 ```bash
 newalbum/
 ├── 2011
